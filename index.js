@@ -129,6 +129,11 @@ let persons = [
     name: 'fdghfdjhfdh',
     number: '436346',
     id: 34
+  },
+  {
+    name: 'fdgdfgfdgdfgdfgdfgfdh',
+    number: '4363464564',
+    id: 35
   }
 ]
 
@@ -184,9 +189,11 @@ app.post('/api/persons', (request, response) => {
   const names = persons.map(person => person.name)
   const nombreEnArray = names.includes(newPerson.name)
 
-  nombreEnArray === true || (newPerson.name === '' || newPerson.number === '')
-    ? response.status(406).json({ error: 'Falta informacion o ya existe esa persona' })
-    : persons.concat(newPerson)
+  if (nombreEnArray || newPerson.name === '' || newPerson.number === '') {
+    return response.status(406).json({ error: 'Falta informacion o ya existe esa persona' })
+  }
+
+  persons = [...persons, newPerson]
 
   response.status(201).json(newPerson)
 })

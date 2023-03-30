@@ -5,8 +5,8 @@ require('./mongo.js')
 const express = require('express')
 const cors = require('cors')
 const Person = require('./models/Person.js')
-const logger = require('./loggerMiddlewares')
 const morgan = require('morgan')
+const logger = require('./loggerMiddlewares')
 const notFound = require('./middleware/notFound.js')
 const handleError = require('./middleware/handleError.js')
 const app = express()
@@ -90,7 +90,6 @@ app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(id).then(() => {
     response.status(204).end()
   }).catch(error => next(error))
-  response.status(204).end()
 })
 
 // Añadir una persona a la base de datos
@@ -103,18 +102,22 @@ app.post('/api/persons', (request, response) => {
     number: person.number
   })
 
-  // const names = persons.map(person => person.name)
-
-  const names = Person.find({ name: newPerson.name })
-  const nombreEnArray = names.includes(newPerson.name)
-
-  if (nombreEnArray || newPerson.name === '' || newPerson.number === '') {
-    return response.status(400).json({ error: 'Falta informacion o ya existe esa persona' })
-  }
-
-  // Guardo en la base de datos
-  newPerson.save().then(savedPerson => {
-    response.status(201).json(savedPerson)
+  // Busco si ya existe una persona con el mismo nombre
+  let personExists = false
+  Person.findOne({ name: newPerson.name }).then(result => {
+    if (result) {
+      personExists = true
+    }
+  }).finally(() => {
+    // Valido si existe la persona o faltan datos
+    if (personExists || newPerson.name === '' || newPerson.number === '') {
+      return response.status(400).json({ error: 'Falta informacion o ya existe esa persona' })
+    } else {
+      // Guardo en la base de datos
+      newPerson.save().then(savedPerson => {
+        response.status(201).json(savedPerson)
+      })
+    }
   })
 })
 

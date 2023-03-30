@@ -1,0 +1,7 @@
+PUT http://localhost:3001/api/persons/6424898ccbbd6efd06f33337
+Content-Type: application/json
+
+{
+  "name": "hola a todos xddddd",
+    "number": "12345678"
+}

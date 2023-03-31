@@ -33,10 +33,6 @@ app.use(morgan((tokens, req, res) => {
 
 // EL ORDEN DE LOS MIDDLEWARES IMPORTA
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World</h1>')
-})
-
 // Informacion acerca de la cantidad de personas y la fecha y horario de consulta
 
 app.get('/info', (request, response) => {

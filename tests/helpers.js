@@ -16,7 +16,10 @@ const initialPersons = [
 
 const getAllNamePersons = async () => {
   const response = await api.get('/api/persons')
-  return response.body.map(r => r.name)
+  return {
+    names: response.body.map(r => r.name),
+    response
+  }
 }
 
 module.exports = {

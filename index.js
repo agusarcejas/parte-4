@@ -48,10 +48,9 @@ app.get('/info', (request, response) => {
 
 // Obtener todas las personas
 
-app.get('/api/persons', (request, response) => {
-  Person.find({}).then(persons => {
-    response.json(persons)
-  })
+app.get('/api/persons', async (request, response) => {
+  const persons = await Person.find({})
+  response.json(persons)
 })
 
 // Obtener una persona de la base de datos
@@ -85,16 +84,15 @@ app.put('/api/persons/:id', (request, response, next) => {
 
 // Eliminar una persona de la base de datos
 
-app.delete('/api/persons/:id', (request, response, next) => {
+app.delete('/api/persons/:id', async (request, response, next) => {
   const { id } = request.params
-  Person.findByIdAndDelete(id).then(() => {
-    response.status(204).end()
-  }).catch(error => next(error))
+  await Person.findByIdAndDelete(id)
+  response.status(204).end()
 })
 
 // Añadir una persona a la base de datos
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', async (request, response, next) => {
   const person = request.body
 
   const newPerson = new Person({
@@ -102,23 +100,22 @@ app.post('/api/persons', (request, response) => {
     number: person.number
   })
 
-  // Busco si ya existe una persona con el mismo nombre
-  let personExists = false
-  Person.findOne({ name: newPerson.name }).then(result => {
-    if (result) {
-      personExists = true
-    }
-  }).finally(() => {
-    // Valido si existe la persona o faltan datos
-    if (personExists || newPerson.name === '' || newPerson.number === '') {
-      return response.status(400).json({ error: 'Falta informacion o ya existe esa persona' })
+  if (!newPerson.name || newPerson.name === '' || !newPerson.number || newPerson.number === '') {
+    return response.status(400).json({ error: 'Faltan completar campos' })
+  } else {
+    // Busco si ya existe una persona con el mismo nombre
+    const result = await Person.findOne({ name: newPerson.name })
+    if (result !== null) {
+      return response.status(400).json({ error: 'Ya existe esa persona' })
     } else {
-      // Guardo en la base de datos
-      newPerson.save().then(savedPerson => {
+      try {
+        const savedPerson = await newPerson.save()
         response.status(201).json(savedPerson)
-      })
+      } catch (error) {
+        next(error)
+      }
     }
-  })
+  }
 })
 
 // ERROR
